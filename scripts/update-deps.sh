@@ -257,7 +257,6 @@ local command="${1:-}"
 local no_test=false
 local no_backup=false
 
-```
 # Parse options
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -399,10 +398,7 @@ case "$command" in
         exit 1
         ;;
 esac
-```
-
 }
 
 # Run main function
-
 main "$@"
