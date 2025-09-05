@@ -93,37 +93,35 @@ jobs:
       - name: Check shell scripts
         run: |
           if [ -d "scripts" ] && [ -n "$(find scripts -name '*.sh' 2>/dev/null)" ]; then
-            nix develop --command shellcheck scripts/*.sh || echo "Warning: shellcheck failed for scripts"
+            nix develop --command shellcheck scripts/*.sh || echo "Warning - shellcheck failed for scripts"
           fi
           if [ -d "modules/nixos/hardware/scripts" ] && [ -n "$(find modules/nixos/hardware/scripts -name '*.sh' 2>/dev/null)" ]; then
-            nix develop --command shellcheck modules/nixos/hardware/scripts/*.sh || echo "Warning: shellcheck failed for hardware scripts"
+            nix develop --command shellcheck modules/nixos/hardware/scripts/*.sh || echo "Warning - shellcheck failed for hardware scripts"
           fi
 
       - name: Check shell script formatting
         run: |
           if [ -d "scripts" ] && [ -n "$(find scripts -name '*.sh' 2>/dev/null)" ]; then
-            nix develop --command shfmt -d scripts/*.sh || echo "Warning: shfmt failed for scripts"
+            nix develop --command shfmt -d scripts/*.sh || echo "Warning - shfmt failed for scripts"
           fi
           if [ -d "modules/nixos/hardware/scripts" ] && [ -n "$(find modules/nixos/hardware/scripts -name '*.sh' 2>/dev/null)" ]; then
-            nix develop --command shfmt -d modules/nixos/hardware/scripts/*.sh || echo "Warning: shfmt failed for hardware scripts"
+            nix develop --command shfmt -d modules/nixos/hardware/scripts/*.sh || echo "Warning - shfmt failed for hardware scripts"
           fi
 
       - name: Lint Markdown files
         run: |
           if [ -n "$(find . -maxdepth 1 -name '*.md' 2>/dev/null)" ]; then
-            nix develop --command markdownlint ./*.md || echo "Warning: markdownlint failed"
+            nix develop --command markdownlint ./*.md || echo "Warning - markdownlint failed"
           else
             echo "No Markdown files found to lint"
           fi
 
       - name: Lint YAML files
-        run: nix develop --command yamllint . || echo "Warning: yamllint failed"
+        run: nix develop --command yamllint . || echo "Warning - yamllint failed"
 
       - name: Lint GitHub Actions
-        run: nix develop --command actionlint || echo "Warning: actionlint failed"
+        run: nix develop --command actionlint || echo "Warning - actionlint failed"
 
-        
-# Add to your existing .github/workflows/ci.yml
   test-dependency-updates:
     runs-on: ubuntu-latest
     timeout-minutes: 20
