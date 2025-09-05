@@ -75,16 +75,37 @@ jobs:
         id: security_check
         run: |
           # Check for recent NixOS security announcements
-          curl -s "https://discourse.nixos.org/c/announcements/security/67.json" \
-            | jq '.topic_list.topics[0:5]' > recent-security.json
+          echo "Fetching security announcements..."
+          
+          # Fetch with error handling
+          if curl -s "https://discourse.nixos.org/c/announcements/security/67.json" > discourse-response.json; then
+            # Check if response contains valid data
+            if jq -e '.topic_list.topics' discourse-response.json > /dev/null 2>&1; then
+              jq '.topic_list.topics[0:5]' discourse-response.json > recent-security.json
+              echo "✅ Successfully fetched security announcements"
+            else
+              echo "⚠️ API response doesn't contain expected topic_list.topics structure"
+              echo "[]" > recent-security.json
+            fi
+          else
+            echo "⚠️ Failed to fetch security announcements from Discourse API"
+            echo "[]" > recent-security.json
+          fi
           
           # Check if there are recent security updates (last 7 days)
-          recent_security=$(jq -r --arg date "$(date -d '7 days ago' '+%Y-%m-%d')" '[.[] | select(.created_at > $date)] | length' recent-security.json)
+          if [ -s recent-security.json ] && [ "$(cat recent-security.json)" != "[]" ]; then
+            recent_security=$(jq -r --arg date "$(date -d '7 days ago' '+%Y-%m-%d')" '[.[] | select(.created_at > $date)] | length' recent-security.json 2>/dev/null || echo "0")
+          else
+            recent_security=0
+          fi
+          
           echo "recent_security_count=$recent_security" >> $GITHUB_OUTPUT
           
           if [ "$recent_security" -gt 0 ]; then
             echo "🚨 Found $recent_security recent security announcements"
-            jq -r '.[] | "- [\(.title)](\(.slug))"' recent-security.json | head -5
+            jq -r '.[] | "- [\(.title)](\(.slug))"' recent-security.json | head -5 || echo "Could not parse security announcements"
+          else
+            echo "ℹ️ No recent security announcements found"
           fi
 
       - name: Update flake inputs
@@ -361,4 +382,3 @@ jobs:
           else
             echo "❌ Update failed - manual intervention required"
           fi
-
